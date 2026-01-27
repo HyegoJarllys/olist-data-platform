@@ -25,26 +25,44 @@ This project showcases a **complete data platform** built on the Brazilian e-com
 
 ---
 
-## 🏗️ Architecture┌─────────────────────────────────────────────────────────┐
-│              OLIST DATASET (KAGGLE)                     │
-│  9 CSV files | 550k+ records | Brazilian E-commerce    │
-└────────────────────┬────────────────────────────────────┘
-↓
+## 🏗️ Architecture
 ┌─────────────────────────────────────────────────────────┐
-│         AIRFLOW ORCHESTRATION (8 DAGs)                  │
-│  • Ingestion  • Quality  • Transform  • ML  • Monitor   │
-└────────────────────┬────────────────────────────────────┘
-↓
-┌──────────────┬──────────────┬──────────────┬───────────┐
-│   BRONZE     │    SILVER    │     GOLD     │    BI     │
-│  Raw Data    │   Metrics    │  ML Features │ Dashboards│
-│ PostgreSQL   │   DBT        │  DBT + ML    │ Power BI  │
-└──────────────┴──────────────┴──────────────┴───────────┘
-↓
-┌─────────────────────────────────────────────────────────┐
-│              OBSERVABILITY & GOVERNANCE                  │
-│  Great Expectations | MLflow | Vertex AI | Metabase     │
+│                    FLUXO DOS DADOS                      │
 └─────────────────────────────────────────────────────────┘
+
+CSV (Kaggle)
+    ↓
+┌───────────────┐
+│  PostgreSQL   │ ← Banco TRANSACIONAL (OLTP)
+│  (Docker)     │   Propósito: Validar modelo relacional
+└───────┬───────┘   Uso: Desenvolvimento/aprendizado
+        │
+        ├─────────────────────────────────────────┐
+        ↓                                         ↓
+┌───────────────┐                         ┌──────────────┐
+│ Cloud Storage │                         │   BigQuery   │
+│  (GCS)        │                         │              │
+│               │                         │              │
+│ Data Lake     │                         │ Data Warehouse│
+│ (Bronze)      │────────────────────────►│ (OLAP)       │
+│               │                         │              │
+│ Armazena raw  │                         │ Análises SQL │
+│ em Parquet    │                         │ complexas    │
+└───────────────┘                         └──────┬───────┘
+                                                 │
+                                                 ↓
+                                          ┌──────────────┐
+                                          │   DBT        │
+                                          │ Transforma   │
+                                          │ Silver/Gold  │
+                                          └──────┬───────┘
+                                                 │
+                    ┌────────────────────────────┼─────────────┐
+                    ↓                            ↓             ↓
+             ┌─────────────┐            ┌─────────────┐  ┌─────────┐
+             │  Power BI   │            │   ML Model  │  │ Vertex  │
+             │ (Dashboards)│            │  (Features) │  │   AI    │
+             └─────────────┘            └─────────────┘  └─────────┘
 
 ---
 

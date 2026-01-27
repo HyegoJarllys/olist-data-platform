@@ -1,0 +1,133 @@
+# ============================================
+# PYTHON
+# ============================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# ============================================
+# AIRFLOW
+# ============================================
+airflow/logs/*
+!airflow/logs/.gitkeep
+airflow/airflow.db
+airflow/airflow.cfg
+airflow/webserver_config.py
+airflow/unittests.cfg
+airflow-webserver.pid
+standalone_admin_password.txt
+
+# ============================================
+# DBT
+# ============================================
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/profiles.yml
+
+# ============================================
+# DATA & ML
+# ============================================
+# Data files
+*.csv
+*.parquet
+*.json
+*.xml
+!airflow/dags/*.json
+
+# ML models e experiments
+ml/experiments/mlruns/*
+!ml/experiments/mlruns/.gitkeep
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# Notebooks checkpoints
+notebooks/.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# ============================================
+# CREDENTIALS & SECRETS
+# ============================================
+.env
+*.key
+*.json
+!dbt/models/**/*.json
+*-key.json
+*service-account*.json
+credentials.json
+
+# ============================================
+# GOOGLE CLOUD
+# ============================================
+.gcloud/
+gcp-credentials.json
+
+# ============================================
+# GREAT EXPECTATIONS
+# ============================================
+data_quality/great_expectations/uncommitted/
+data_quality/great_expectations/.ge_store_backend_id
+
+# ============================================
+# SYSTEM FILES
+# ============================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# ============================================
+# IDE
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Jupyter
+.jupyter/
+
+# ============================================
+# LOGS & TEMP
+# ============================================
+*.log
+logs/
+*.tmp
+*.temp
+*.cache
+
+# ============================================
+# DOCKER
+# ============================================
+docker-compose.override.yml
+
+# ============================================
+# OUTROS
+# ============================================
+# Backup files
+*.bak
+*.backup
+*~

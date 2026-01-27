@@ -1,0 +1,942 @@
+# 🗺️ OLIST DATA PLATFORM - ROADMAP COMPLETO
+
+**Duração Total:** 8 semanas | **Esforço:** 120-160 horas | **Complexidade:** Pleno
+
+---
+
+## 📊 VISÃO GERAL DO PROJETO
+
+### **Objetivo**
+Construir plataforma de dados end-to-end demonstrando práticas enterprise em engenharia de dados, analytics, MLOps e BI.
+
+### **Entregas Finais**
+- 8 DAGs Airflow produção
+- 20+ modelos DBT (bronze/silver/gold)
+- 15+ validações Great Expectations
+- 1 modelo ML com MLflow
+- 4 dashboards (Power BI + Metabase)
+- IA analytics com Vertex AI Gemini
+- Documentação completa (10+ páginas)
+
+### **Skills Demonstradas**
+Data Engineering (40%) | Analytics Engineering (30%) | MLOps (15%) | BI (10%) | AI (5%)
+
+---
+
+## 📅 CRONOGRAMA MACRO
+
+| Fase | Duração | Entregável Principal |
+|------|---------|---------------------|
+| **Fase 0: Setup** | Semana 1 | Airflow rodando, primeiro DAG |
+| **Fase 1: Ingestão** | Semanas 2-3 | Dados em PostgreSQL + GCS |
+| **Fase 2: Qualidade** | Semana 4 | Great Expectations configurado |
+| **Fase 3: DBT** | Semanas 5-6 | Modelagem medalha completa |
+| **Fase 4: ML** | Semana 7 | Modelo em produção (MLflow) |
+| **Fase 5: BI** | Semana 8 (D1-4) | 4 dashboards publicados |
+| **Fase 6: IA** | Semana 8 (D5-6) | Diagnóstico inteligente |
+| **Fase 7: Docs** | Semana 8 (D7) | Portfolio completo |
+
+---
+
+## 🚀 FASE 0: SETUP & FUNDAÇÃO
+
+**Duração:** 1 semana | **Esforço:** 15-20h
+
+### **Objetivos**
+- Ambiente desenvolvimento configurado
+- Airflow rodando localmente
+- GCP setup completo
+- Primeiro DAG funcionando
+
+### **Tarefas por Dia**
+
+#### **Dia 1: Repositório e Estrutura (3h)**
+- [ ] Criar repositório GitHub
+- [ ] Clonar localmente
+- [ ] Criar estrutura de pastas (airflow, dbt, ml, src, docs, data)
+- [ ] Criar `.gitignore`, `.env.example`, `README.md`
+- [ ] Primeiro commit
+
+**Comandos:**
+```bash
+mkdir -p airflow/{dags,plugins,config,logs,tests}
+mkdir -p dbt/models/{bronze,silver,gold}
+mkdir -p ml/{models,features,pipelines}
+mkdir -p src/{data,utils,ai_analytics}
+mkdir -p docs data/raw dashboards
+git add .
+git commit -m "feat: initial structure"
+```
+
+#### **Dia 2-3: Docker e Airflow (6h)**
+- [ ] Instalar Docker Desktop
+- [ ] Criar `docker-compose.yml` (Airflow + PostgreSQL)
+- [ ] Criar `requirements.txt`
+- [ ] Inicializar Airflow: `docker-compose up airflow-init`
+- [ ] Subir containers: `docker-compose up -d`
+- [ ] Acessar UI: http://localhost:8080 (admin/admin)
+- [ ] Criar DAG teste `00_hello_world.py`
+
+**Validação:**
+- Airflow UI acessível
+- PostgreSQL conectado
+- DAG teste executado com sucesso
+
+#### **Dia 4: Google Cloud Platform (3h)**
+- [ ] Criar conta GCP (ativar free trial US$ 300)
+- [ ] Criar projeto: `olist-data-platform`
+- [ ] Ativar APIs: BigQuery, Cloud Storage, Vertex AI
+- [ ] Criar bucket GCS: `gs://olist-data-lake-[nome]`
+- [ ] Criar dataset BigQuery: `olist_analytics`
+- [ ] Criar service account (roles: BigQuery Admin, Storage Admin, Vertex AI User)
+- [ ] Baixar JSON key (salvar como `gcp-credentials.json`, não versionar!)
+- [ ] Atualizar `.env` com credenciais
+- [ ] Testar conexão (script Python)
+
+**Validação:**
+- Bucket visível no GCS console
+- Dataset visível no BigQuery
+- Script Python conecta sem erro
+
+#### **Dia 5: Dados Olist (2h)**
+- [ ] Baixar dataset Kaggle: https://kaggle.com/datasets/olistbr/brazilian-ecommerce
+- [ ] Extrair 9 CSVs para `data/raw/`
+- [ ] Criar DAG `01_test_olist.py` (ler CSV com pandas)
+- [ ] Executar DAG e verificar logs
+
+**Validação:**
+- 9 CSVs em `data/raw/`
+- DAG lê CSV sem erro
+- Logs mostram primeiras linhas
+
+#### **Dia 6-7: Schema PostgreSQL (4h)**
+- [ ] Criar arquivo `src/database/schema.sql`
+- [ ] Copiar schema das 9 tabelas (seu trabalho anterior!)
+- [ ] Criar DAG `02_setup_database.py` (executa SQL)
+- [ ] Executar DAG para criar tabelas
+- [ ] Validar no PostgreSQL (9 tabelas vazias criadas)
+
+**Validação:**
+```sql
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public';
+-- Deve retornar 9 tabelas
+```
+
+### **Entregáveis Fase 0**
+- [x] Repositório GitHub configurado
+- [x] Airflow rodando (localhost:8080)
+- [x] GCP configurado (bucket + dataset)
+- [x] Dados Olist baixados (9 CSVs)
+- [x] Schema PostgreSQL criado (9 tabelas)
+- [x] 2-3 DAGs funcionando
+- [x] README.md inicial
+- [x] Documentação: `docs/PHASE_0_SETUP.md`
+
+---
+
+## 📦 FASE 1: INGESTÃO DE DADOS
+
+**Duração:** 2 semanas | **Esforço:** 25-30h
+
+### **Objetivos**
+- CSV → PostgreSQL (9 tabelas populadas)
+- CSV → GCS (data lake bronze layer)
+- Validações básicas automatizadas
+
+### **Semana 2: Ingestão Batch**
+
+#### **Dia 8: DAG CSV → PostgreSQL (4h)**
+- [ ] Criar `airflow/dags/03_ingest_csv_to_postgres.py`
+- [ ] Função para ler CSV com pandas
+- [ ] Função para carregar em PostgreSQL (to_sql)
+- [ ] Criar tasks para 9 tabelas (ordem: independentes primeiro)
+- [ ] Definir dependências (FKs)
+- [ ] Executar DAG
+- [ ] Validar row counts
+
+**Lógica de Dependências:**
+```
+customers, sellers, products, categories, geolocation (paralelo)
+    ↓
+orders (depende de customers)
+    ↓
+order_items (depende de orders, products, sellers)
+order_payments (depende de orders)
+order_reviews (depende de orders)
+```
+
+**Validação:**
+- 99.441 linhas em `customers`
+- 99.441 linhas em `orders`
+- 112.650 linhas em `order_items`
+
+#### **Dia 9-10: DAG CSV → GCS (5h)**
+- [ ] Criar `airflow/dags/04_ingest_csv_to_gcs.py`
+- [ ] Função para converter CSV → Parquet
+- [ ] Função para upload no GCS
+- [ ] Estrutura de pastas: `bronze/{table}/{date}.parquet`
+- [ ] Executar para 7 tabelas principais
+- [ ] Verificar no GCS console
+
+**Validação:**
+- 7 arquivos Parquet no bucket
+- Path: `gs://bucket/bronze/customers/2025-01-27.parquet`
+
+#### **Dia 11: DAG de Validação (3h)**
+- [ ] Criar `airflow/dags/05_validate_ingestion.py`
+- [ ] Validar row counts (esperado vs real)
+- [ ] Validar integridade FK (0 órfãos)
+- [ ] Validar schema (colunas esperadas existem)
+- [ ] Executar e garantir 100% pass
+
+**Queries de Validação:**
+```sql
+-- Row counts
+SELECT COUNT(*) FROM customers; -- expect 99441
+
+-- FK integrity
+SELECT COUNT(*) FROM orders o
+LEFT JOIN customers c ON o.customer_id = c.customer_id
+WHERE c.customer_id IS NULL; -- expect 0
+```
+
+### **Semana 3: Data Quality Foundation**
+
+#### **Dia 12-13: Great Expectations Setup (6h)**
+- [ ] Instalar Great Expectations no Airflow
+- [ ] Inicializar: `great_expectations init`
+- [ ] Conectar ao PostgreSQL como datasource
+- [ ] Criar expectation suite: `orders_suite`
+  - [ ] `expect_column_values_to_not_be_null` (order_id)
+  - [ ] `expect_column_values_to_be_unique` (order_id)
+  - [ ] `expect_column_values_to_be_in_set` (order_status)
+- [ ] Executar validação manual
+- [ ] Gerar Data Docs
+
+**Validação:**
+- Data Docs acessível (HTML)
+- Suite com 3+ expectations
+
+#### **Dia 14: Integração Airflow + GE (4h)**
+- [ ] Criar `airflow/dags/06_data_quality_checks.py`
+- [ ] Task para executar checkpoint GE
+- [ ] Parse resultados (success/fail)
+- [ ] Se falhar → enviar alerta (print por enquanto)
+- [ ] Schedule: após DAG ingestão
+
+**Validação:**
+- DAG executa GE checkpoint
+- Results aparecem em Data Docs
+
+### **Entregáveis Fase 1**
+- [x] 550k+ registros em PostgreSQL (9 tabelas)
+- [x] Dados no GCS (bronze layer, Parquet)
+- [x] DAG ingestão PostgreSQL
+- [x] DAG ingestão GCS
+- [x] DAG validação automática
+- [x] Great Expectations configurado (3+ suites)
+- [x] Data Docs gerados
+- [x] 100% integridade FK validada
+- [x] Documentação: `docs/PHASE_1_INGESTION.md`
+
+---
+
+## 🔍 FASE 2: DATA QUALITY
+
+**Duração:** 1 semana | **Esforço:** 15-18h
+
+### **Objetivos**
+- Expandir expectation suites (15+ expectations)
+- Alertas automáticos
+- Monitoramento de schema drift
+- Dashboards de qualidade
+
+### **Tarefas**
+
+#### **Dia 15-16: Expectations Avançadas (6h)**
+- [ ] Suite para cada tabela principal (customers, orders, products)
+- [ ] Expectations por tipo:
+  - [ ] Nulls: colunas críticas não podem ser NULL
+  - [ ] Ranges: preços > 0, review_score entre 1-5
+  - [ ] Sets: status em lista válida
+  - [ ] Uniqueness: PKs únicas
+  - [ ] Relationships: FKs válidas
+  - [ ] Distributions: percentis esperados
+- [ ] Executar e ajustar thresholds
+
+**Meta:** 15+ expectations no total
+
+#### **Dia 17: Alertas Telegram (3h)**
+- [ ] Criar bot Telegram (via BotFather)
+- [ ] Adicionar token no `.env`
+- [ ] Criar `src/utils/telegram_alerts.py`
+- [ ] Função: `send_alert(message)`
+- [ ] Integrar no DAG de qualidade
+- [ ] Testar com falha simulada
+
+**Validação:**
+- Recebe mensagem no Telegram quando expectation falha
+
+#### **Dia 18: Schema Evolution Tracking (3h)**
+- [ ] Criar tabela `schema_history` (PostgreSQL)
+- [ ] DAG que captura schema atual
+- [ ] Compara com versão anterior
+- [ ] Se mudança → alerta + log
+- [ ] Schedule diário
+
+**Validação:**
+- Detecta quando coluna nova é adicionada
+
+#### **Dia 19: Dashboard de Qualidade (4h)**
+- [ ] Criar `dashboards/streamlit/data_quality.py`
+- [ ] Conectar no PostgreSQL
+- [ ] Métricas:
+  - [ ] % expectations passing
+  - [ ] Histórico de falhas (últimos 30 dias)
+  - [ ] Schema changes log
+  - [ ] Row counts por tabela
+- [ ] Executar: `streamlit run data_quality.py`
+
+**Validação:**
+- Dashboard acessível em localhost:8501
+
+### **Entregáveis Fase 2**
+- [x] 15+ Great Expectations configuradas
+- [x] Alertas Telegram funcionando
+- [x] Schema drift detection
+- [x] Dashboard data quality (Streamlit)
+- [x] Data Docs atualizado
+- [x] Documentação: `docs/PHASE_2_QUALITY.md`
+
+---
+
+## 🏗️ FASE 3: ANALYTICS ENGINEERING (DBT)
+
+**Duração:** 2 semanas | **Esforço:** 30-35h
+
+### **Objetivos**
+- Modelagem medalha (bronze/silver/gold)
+- 20+ modelos DBT
+- Métricas de negócio calculadas
+- Testes DBT automatizados
+- Data lineage documentada
+
+### **Semana 5: Bronze e Silver**
+
+#### **Dia 20-21: DBT Setup (6h)**
+- [ ] Instalar dbt-core e dbt-bigquery
+- [ ] Inicializar projeto: `dbt init olist_dw`
+- [ ] Configurar `profiles.yml` (conexão BigQuery)
+- [ ] Criar `dbt_project.yml`
+- [ ] Testar conexão: `dbt debug`
+- [ ] Criar primeiro modelo: `models/bronze/stg_orders.sql`
+
+**Modelo Bronze Exemplo:**
+```sql
+-- models/bronze/stg_orders.sql
+SELECT
+    order_id,
+    customer_id,
+    order_status,
+    order_purchase_timestamp,
+    order_delivered_customer_date,
+    order_estimated_delivery_date,
+    _airbyte_extracted_at as loaded_at
+FROM {{ source('raw', 'orders') }}
+```
+
+#### **Dia 22-23: Modelos Silver (8h)**
+- [ ] Criar `models/silver/schema.yml`
+- [ ] Modelo: `int_order_metrics.sql`
+  - [ ] Calcular SLA entrega (real vs estimado)
+  - [ ] Flag de atraso (boolean)
+  - [ ] Tempo de entrega (dias)
+- [ ] Modelo: `int_customer_rfm.sql`
+  - [ ] Recência (dias desde última compra)
+  - [ ] Frequência (total de pedidos)
+  - [ ] Monetary (valor total gasto)
+- [ ] Modelo: `int_product_performance.sql`
+  - [ ] Vendas por categoria
+  - [ ] Ticket médio por produto
+  - [ ] Review score médio
+- [ ] Executar: `dbt run --models silver`
+
+#### **Dia 24: Testes DBT (3h)**
+- [ ] Adicionar testes em `schema.yml`:
+  - [ ] `unique` (order_id)
+  - [ ] `not_null` (colunas críticas)
+  - [ ] `relationships` (FKs)
+  - [ ] `accepted_values` (order_status)
+- [ ] Executar: `dbt test`
+- [ ] Garantir 100% pass
+
+### **Semana 6: Gold e Docs**
+
+#### **Dia 25-26: Modelos Gold (8h)**
+- [ ] Modelo: `fct_sales.sql`
+  - [ ] Fato de vendas agregado
+  - [ ] JOIN com dimensões (produto, cliente, tempo)
+  - [ ] Métricas: receita, quantidade, ticket médio
+- [ ] Modelo: `fct_logistics.sql`
+  - [ ] Fato de entregas
+  - [ ] SLA, atrasos, tempo médio
+  - [ ] Agregado por região/seller
+- [ ] Modelo: `mart_executive_kpis.sql`
+  - [ ] KPIs executivos diários
+  - [ ] Receita, pedidos, NPS, churn
+- [ ] Executar: `dbt run --models gold`
+
+#### **Dia 27: Features ML (Gold) (4h)**
+- [ ] Modelo: `ml_delivery_features.sql`
+  - [ ] Features para prever atraso
+  - [ ] Distância (estimada), seller_rating, categoria
+  - [ ] Histórico do cliente, método pagamento
+  - [ ] Label: `delivery_delayed` (boolean)
+- [ ] Materialização: `table` (para ML)
+- [ ] Exportar para CSV (usar em treino)
+
+#### **Dia 28: DBT Docs e Airflow (3h)**
+- [ ] Gerar docs: `dbt docs generate`
+- [ ] Servir docs: `dbt docs serve`
+- [ ] Adicionar descrições em `schema.yml`
+- [ ] Criar DAG `07_dbt_run.py`
+- [ ] Task: `dbt run --models silver`
+- [ ] Task: `dbt run --models gold`
+- [ ] Task: `dbt test`
+- [ ] Schedule: após data quality pass
+
+### **Entregáveis Fase 3**
+- [x] DBT configurado (BigQuery)
+- [x] 20+ modelos (5 bronze, 8 silver, 7 gold)
+- [x] Modelagem medalha completa
+- [x] Métricas: SLA, RFM, NPS, Churn, Ticket Médio
+- [x] Features ML (delivery_features)
+- [x] 10+ testes DBT (100% pass)
+- [x] DBT docs gerados (com lineage)
+- [x] DAG Airflow para DBT
+- [x] Documentação: `docs/PHASE_3_DBT.md`
+
+---
+
+## 🤖 FASE 4: MACHINE LEARNING
+
+**Duração:** 1 semana | **Esforço:** 20-25h
+
+### **Objetivos**
+- Modelo XGBoost (previsão atraso entrega)
+- MLflow setup (tracking + registry)
+- Re-treino automatizado
+- Drift detection
+
+### **Tarefas**
+
+#### **Dia 29-30: Treino Baseline (8h)**
+- [ ] Criar `ml/pipelines/train_delivery_model.py`
+- [ ] Carregar features do BigQuery (gold layer)
+- [ ] Split temporal: 70% treino, 15% val, 15% teste
+- [ ] Treinar XGBoost baseline (params default)
+- [ ] Calcular métricas: AUC-ROC, precision, recall, F1
+- [ ] Salvar modelo: `models/delivery_xgboost_v1.pkl`
+
+**Validação:**
+- AUC-ROC > 0.55 (melhor que acaso)
+
+#### **Dia 31: MLflow Setup (4h)**
+- [ ] Instalar MLflow
+- [ ] Inicializar tracking server local
+- [ ] Modificar script treino para logar:
+  - [ ] Parâmetros (learning_rate, max_depth)
+  - [ ] Métricas (AUC, F1)
+  - [ ] Modelo (artifact)
+  - [ ] Feature importance (plot)
+- [ ] Executar treino novamente
+- [ ] Acessar UI: http://localhost:5000
+
+**Validação:**
+- Experimento aparece no MLflow UI
+
+#### **Dia 32: Otimização (6h)**
+- [ ] Instalar Optuna
+- [ ] Criar `ml/pipelines/optimize_model.py`
+- [ ] Definir espaço de busca (hiperparâmetros)
+- [ ] Executar 50 trials
+- [ ] Registrar melhor modelo no MLflow
+- [ ] Promover para "Production" stage
+
+**Validação:**
+- AUC-ROC melhorou (baseline vs otimizado)
+
+#### **Dia 33: Drift Detection (4h)**
+- [ ] Criar `ml/monitoring/drift_detection.py`
+- [ ] Calcular PSI (Population Stability Index)
+- [ ] Comparar distribuição treino vs produção
+- [ ] Se PSI > 0.2 → alerta
+- [ ] Integrar no DAG Airflow
+
+#### **Dia 34: DAG ML (3h)**
+- [ ] Criar `airflow/dags/08_ml_pipeline.py`
+- [ ] Task: Treinar modelo (semanal)
+- [ ] Task: Validar métricas
+- [ ] Task: Se melhor → registrar MLflow
+- [ ] Task: Deploy em "Production"
+- [ ] Task: Drift detection (diário)
+
+### **Entregáveis Fase 4**
+- [x] Modelo XGBoost treinado (AUC > 0.60)
+- [x] MLflow configurado (tracking + registry)
+- [x] Modelo otimizado (Optuna)
+- [x] Drift detection implementado
+- [x] DAG ML completo
+- [x] Feature importance analisada
+- [x] Documentação: `docs/PHASE_4_ML.md`
+
+---
+
+## 📊 FASE 5: BUSINESS INTELLIGENCE
+
+**Duração:** 4 dias | **Esforço:** 12-15h
+
+### **Objetivos**
+- 4 dashboards (Power BI + Metabase)
+- KPIs executivos
+- Métricas operacionais
+- Self-service analytics
+
+### **Tarefas**
+
+#### **Dia 35-36: Power BI (6h)**
+- [ ] Instalar Power BI Desktop
+- [ ] Conectar em PostgreSQL
+- [ ] Dashboard 1: Executive
+  - [ ] KPIs: Receita, Pedidos, Ticket Médio, NPS
+  - [ ] Gráfico: Receita ao longo do tempo
+  - [ ] Gráfico: Top 5 categorias
+  - [ ] Filtros: Data, Região
+- [ ] Dashboard 2: Logística
+  - [ ] % SLA entrega
+  - [ ] Tempo médio entrega por região
+  - [ ] Mapa de calor (geolocalização)
+  - [ ] Alertas: pedidos atrasados
+- [ ] Dashboard 3: Customer Experience
+  - [ ] Review score médio
+  - [ ] Distribuição (1-5 estrelas)
+  - [ ] Word cloud de comentários
+  - [ ] Churn rate
+- [ ] Publicar arquivos `.pbix` em `dashboards/power_bi/`
+
+#### **Dia 37: Metabase (3h)**
+- [ ] Instalar Metabase (Docker)
+- [ ] Conectar em PostgreSQL + BigQuery
+- [ ] Dashboard 4: Data Quality
+  - [ ] Great Expectations: pass rate
+  - [ ] Pipeline health (DAGs success rate)
+  - [ ] Schema changes log
+  - [ ] Lineage visual
+- [ ] Configurar self-service (users podem criar queries)
+
+#### **Dia 38: Streamlit App (3h)**
+- [ ] Criar `dashboards/streamlit/exploratory.py`
+- [ ] Análise interativa:
+  - [ ] Upload CSV para análise ad-hoc
+  - [ ] Filtros dinâmicos
+  - [ ] Gráficos com Plotly
+- [ ] Executar: `streamlit run exploratory.py`
+
+### **Entregáveis Fase 5**
+- [x] 3 dashboards Power BI (.pbix)
+- [x] 1 dashboard Metabase (data quality)
+- [x] Streamlit app (análise exploratória)
+- [x] KPIs executivos calculados
+- [x] Screenshots dos dashboards
+- [x] Documentação: `docs/PHASE_5_DASHBOARDS.md`
+
+---
+
+## 🧠 FASE 6: AI-POWERED MONITORING
+
+**Duração:** 2 dias | **Esforço:** 6-8h
+
+### **Objetivos**
+- Vertex AI Gemini integrado
+- Diagnóstico automático de falhas
+- Alertas inteligentes
+
+### **Tarefas**
+
+#### **Dia 39: Vertex AI Setup (3h)**
+- [ ] Ativar Vertex AI API no GCP
+- [ ] Criar `src/ai_analytics/gemini_client.py`
+- [ ] Função: `analyze_logs(dag_id, task_id, error_message)`
+- [ ] Prompt estruturado:
+```
+Você é especialista em Airflow.
+DAG: {dag_id}
+Task: {task_id}
+Erro: {error_message}
+Logs: {logs_ultimas_100_linhas}
+Analise e retorne JSON:
+{
+  "causa_raiz": "...",
+  "sugestao_correcao": "...",
+  "severidade": "critical/high/medium/low"
+}
+```
+- [ ] Testar com erro simulado
+
+#### **Dia 40: Integração Airflow (3h)**
+- [ ] Modificar DAGs para capturar falhas
+- [ ] On failure callback: chamar Gemini
+- [ ] Parse resposta JSON
+- [ ] Enviar alerta Telegram com diagnóstico
+- [ ] Criar ticket GitHub (opcional)
+
+**Exemplo Alerta:**
+```
+⚠️ DAG `dbt_run` FAILED
+Task: `dbt_silver_models`
+
+🤖 Diagnóstico IA:
+Erro de sintaxe SQL no modelo `int_order_metrics.sql`
+Linha 15: coluna `oder_id` não existe (typo: order_id)
+
+💡 Correção sugerida:
+Alterar `oder_id` → `order_id` linha 15
+
+🔗 Logs: [link]
+```
+
+### **Entregáveis Fase 6**
+- [x] Vertex AI Gemini configurado
+- [x] Diagnóstico automático funcionando
+- [x] Alertas Telegram com IA
+- [x] 3+ tipos de erro testados
+- [x] Documentação: `docs/PHASE_6_AI_ANALYTICS.md`
+
+---
+
+## 📚 FASE 7: DOCUMENTAÇÃO & POLISH
+
+**Duração:** 1 dia | **Esforço:** 8-10h
+
+### **Objetivos**
+- README profissional
+- Documentação completa (7 fases)
+- Diagramas de arquitetura
+- Vídeo demo
+- LinkedIn post
+
+### **Tarefas**
+
+#### **Dia 41: Documentação (6h)**
+- [ ] Atualizar `README.md` (3000+ palavras)
+- [ ] Criar/revisar 7 arquivos `PHASE_*.md`
+- [ ] Criar `docs/ARCHITECTURE.md`
+- [ ] Diagramas (draw.io ou Excalidraw):
+  - [ ] Arquitetura geral
+  - [ ] Pipeline de dados
+  - [ ] Fluxo MLOps
+- [ ] Adicionar badges no README
+- [ ] Screenshots de dashboards
+- [ ] GIFs de execuções Airflow
+
+#### **Dia 41 (tarde): Vídeo e LinkedIn (4h)**
+- [ ] Gravar vídeo demo (5 minutos):
+  - [ ] Mostrar Airflow UI
+  - [ ] Executar DAG
+  - [ ] Mostrar dashboard Power BI
+  - [ ] Mostrar MLflow
+  - [ ] Mostrar alerta Telegram
+- [ ] Upload no YouTube (unlisted)
+- [ ] Escrever LinkedIn post (3 versões):
+  - [ ] Versão BI (foco dashboards)
+  - [ ] Versão Analytics Eng (foco DBT)
+  - [ ] Versão Data Platform (completo)
+- [ ] Publicar e engajar
+
+### **Entregáveis Fase 7**
+- [x] README.md atualizado (profissional)
+- [x] 7 arquivos PHASE_*.md completos
+- [x] 3 diagramas de arquitetura
+- [x] Vídeo demo (5 min)
+- [x] LinkedIn post publicado
+- [x] Portfolio 100% completo
+
+---
+
+## ✅ CRITÉRIOS DE SUCESSO
+
+### **Técnicos**
+- [ ] 8 DAGs Airflow sem erros (7 dias uptime)
+- [ ] 100% Great Expectations passing
+- [ ] 20+ modelos DBT deployados
+- [ ] AUC-ROC modelo ML > 0.60
+- [ ] 4 dashboards publicados
+- [ ] 0 secrets no Git
+
+### **Documentação**
+- [ ] README com 3000+ palavras
+- [ ] 7 arquivos de fase (10+ páginas total)
+- [ ] 3 diagramas profissionais
+- [ ] Vídeo demo gravado
+
+### **Carreira**
+- [ ] GitHub: 50+ commits
+- [ ] LinkedIn: post com 50+ reações
+- [ ] Currículo: 3 versões (BI, Analytics, Platform)
+- [ ] Aplicações: 10+ vagas
+
+---
+
+## 🎯 MÉTRICAS FINAIS DO PROJETO
+
+| Métrica | Valor |
+|---------|-------|
+| **Total de Registros** | 550.118 |
+| **Tabelas Relacionais** | 9 |
+| **Airflow DAGs** | 8 |
+| **DBT Models** | 20+ |
+| **Great Expectations** | 15+ |
+| **Dashboards** | 4 |
+| **Modelos ML** | 1 |
+| **Linhas de Código** | ~3.000 |
+| **Commits Git** | 50+ |
+| **Páginas Docs** | 10+ |
+
+---
+
+## 📖 RECURSOS DE APRENDIZADO
+
+### **Durante o Projeto**
+- Airflow Docs: https://airflow.apache.org/docs/
+- DBT Learn: https://courses.getdbt.com/
+- Great Expectations: https://docs.greatexpectations.io/
+- MLflow Docs: https://mlflow.org/docs/
+
+### **Comunidades**
+- r/dataengineering (Reddit)
+- DBT Slack Community
+- Stack Overflow (tags: airflow, dbt, great-expectations)
+
+---
+
+## 🆘 TROUBLESHOOTING RÁPIDO
+
+**Airflow não sobe:**
+```bash
+docker-compose down -v
+docker-compose up airflow-init
+docker-compose up -d
+```
+
+**DAG não aparece:**
+- Verificar sintaxe Python
+- Checar logs: `docker-compose logs airflow-scheduler`
+- Refresh: F5 no browser
+
+**GCS upload falha:**
+- Validar service account permissions
+- Testar: `gsutil ls gs://seu-bucket`
+
+**DBT connection error:**
+- Validar `profiles.yml`
+- Testar: `dbt debug`
+
+---
+
+**Status:** Ready to Execute  
+**Última Atualização:** Janeiro 2025  
+**Versão:** 1.0
+
+🤖 PROMPT TEMPLATE PARA IAs
+markdown# TEMPLATE DE PROMPT - ASSISTÊNCIA NO PROJETO OLIST DATA PLATFORM
+
+## 📋 CONTEXTO DO PROJETO
+
+**Projeto:** Olist Data Platform  
+**Objetivo:** Construir plataforma de dados end-to-end (engenharia de dados + analytics + MLOps + BI)  
+**Stack:** Airflow, DBT, Great Expectations, MLflow, Power BI, Metabase, Vertex AI  
+**Dataset:** Olist Brazilian E-commerce (Kaggle) - 9 tabelas, 550k registros  
+**Duração:** 8 semanas | **Status Atual:** [PREENCHER FASE ATUAL]
+
+---
+
+## 🎯 COMO USAR ESTE TEMPLATE
+
+Copie o template abaixo e preencha as seções marcadas com [PREENCHER].  
+Cole no ChatGPT/Claude/Gemini para obter assistência contextual.
+
+---
+
+## 📝 PROMPT TEMPLATE
+```
+Sou desenvolvedor trabalhando no projeto **Olist Data Platform**, uma plataforma de dados completa para e-commerce demonstrando práticas enterprise.
+
+**CONTEXTO DO PROJETO:**
+- Stack: Airflow (orquestração), DBT (transformação), PostgreSQL + BigQuery (storage), MLflow (ML), Power BI (BI)
+- Dataset: Olist Brazilian E-commerce (9 tabelas relacionais, 550k registros)
+- Ambiente: Docker (Airflow local), Google Cloud Platform (BigQuery, GCS, Vertex AI)
+- Objetivo: Portfolio profissional para vagas de Data Engineer / Analytics Engineer
+
+**FASE ATUAL:**
+[PREENCHER: ex: "Fase 3 - Analytics Engineering com DBT, estou criando modelos silver layer"]
+
+**TAREFA ESPECÍFICA:**
+[PREENCHER: ex: "Preciso criar modelo DBT que calcula SLA de entrega (data real vs estimada)"]
+
+**O QUE JÁ FIZ:**
+[PREENCHER: ex: "Já tenho dados em PostgreSQL, schema com 9 tabelas, DBT configurado"]
+
+**ONDE ESTOU TRAVADO:**
+[PREENCHER: ex: "Não sei como fazer DATEDIFF no BigQuery SQL"]
+
+**DÚVIDA/PEDIDO:**
+[PREENCHER: ex: "Me ajude a escrever query SQL (BigQuery) para calcular SLA de entrega"]
+
+**FORMATO DESEJADO DA RESPOSTA:**
+[ESCOLHA UMA OU MAIS:]
+- [ ] Explicação conceitual (sem código ainda)
+- [ ] Código SQL comentado
+- [ ] Código Python comentado
+- [ ] Passo a passo (1, 2, 3...)
+- [ ] Exemplos práticos
+- [ ] Boas práticas da indústria
+- [ ] Links para documentação oficial
+
+**RESTRIÇÕES:**
+- Usar apenas ferramentas gratuitas/open source
+- Código deve rodar no ambiente Docker/GCP free tier
+- Seguir padrões do projeto (nomes de pastas, convenções)
+
+**INFORMAÇÃO ADICIONAL:**
+[OPCIONAL: qualquer contexto extra relevante]
+```
+
+---
+
+## 📚 EXEMPLOS DE USO
+
+### **Exemplo 1: Ajuda com DBT**
+```
+Sou desenvolvedor trabalhando no projeto Olist Data Platform.
+
+**FASE ATUAL:** Fase 3 - DBT, criando modelos silver layer
+
+**TAREFA:** Criar modelo `int_order_metrics.sql` que calcula métricas de pedidos
+
+**O QUE JÁ FIZ:**
+- DBT configurado, conectado no BigQuery
+- Modelo bronze `stg_orders` já existe
+- Tabelas: orders (order_id, order_purchase_timestamp, order_delivered_customer_date, order_estimated_delivery_date)
+
+**ONDE ESTOU TRAVADO:**
+- Como calcular diferença de dias entre datas no BigQuery?
+- Como criar flag booleana "atrasado" (delivered > estimated)?
+
+**DÚVIDA:**
+Me ajude a escrever modelo DBT que:
+1. Calcula dias entre purchase e delivery
+2. Calcula dias de atraso (0 se entregue no prazo)
+3. Cria flag `is_delayed` (boolean)
+
+**FORMATO:** Código SQL comentado (BigQuery syntax)
+```
+
+---
+
+### **Exemplo 2: Ajuda com Airflow**
+```
+Projeto: Olist Data Platform
+
+**FASE ATUAL:** Fase 1 - Ingestão de dados
+
+**TAREFA:** Criar DAG Airflow para carregar CSVs no PostgreSQL
+
+**O QUE JÁ FIZ:**
+- Airflow rodando via Docker
+- 9 CSVs em `data/raw/`
+- PostgreSQL com schema criado (9 tabelas vazias)
+
+**ONDE ESTOU TRAVADO:**
+- Como definir ordem de execução? (tabelas têm Foreign Keys)
+- Como passar path do CSV para função Python?
+
+**DÚVIDA:**
+Me mostre estrutura de DAG com:
+- Tasks dinâmicas (loop sobre lista de tabelas)
+- Dependências corretas (FKs)
+- Error handling básico
+
+**FORMATO:** Código Python comentado
+```
+
+---
+
+### **Exemplo 3: Ajuda com ML**
+```
+Projeto: Olist Data Platform
+
+**FASE ATUAL:** Fase 4 - Machine Learning
+
+**TAREFA:** Treinar XGBoost para prever atraso de entrega
+
+**O QUE JÁ FIZ:**
+- Features prontas no BigQuery (tabela `ml_delivery_features`)
+- Colunas: distancia_km, categoria_produto, metodo_pagamento, seller_rating, label (is_delayed boolean)
+
+**ONDE ESTOU TRAVADO:**
+- Como fazer split temporal (não aleatório)?
+- XGBoost aceita variáveis categóricas direto ou precisa encoding?
+
+**DÚVIDA:**
+Me mostre código Python para:
+1. Carregar dados do BigQuery
+2. Split temporal (70/15/15 por data)
+3. Treinar XGBoost (lidar com categóricas)
+4. Calcular AUC-ROC
+
+**FORMATO:** Código Python comentado + explicação do split temporal
+```
+
+---
+
+## 🎓 DICAS PARA PROMPTS EFICAZES
+
+### **✅ FAÇA:**
+- Seja específico sobre a fase/tarefa atual
+- Mencione o que já funciona (para não repetir)
+- Indique formato desejado (código, explicação, passo a passo)
+- Diga suas restrições (ferramentas gratuitas, ambiente Docker)
+
+### **❌ EVITE:**
+- Perguntas vagas: "Como fazer data engineering?"
+- Sem contexto: "Me dá código de Airflow" (qual DAG? qual objetivo?)
+- Pedir tudo de uma vez: quebre em tarefas pequenas
+
+### **🎯 ESTRUTURA IDEAL:**
+1. Contexto (1 linha sobre o projeto)
+2. Fase atual (onde está no roadmap)
+3. Tarefa específica (o que quer fazer agora)
+4. O que já fez (evita repetição)
+5. Onde travou (o problema exato)
+6. Dúvida clara (pergunta direta)
+7. Formato desejado (código/explicação/ambos)
+
+---
+
+## 📌 VOCABULÁRIO DO PROJETO
+
+Para contexto consistente, use esses termos:
+
+- **Bronze layer:** Dados brutos (PostgreSQL ou GCS Parquet)
+- **Silver layer:** Métricas intermediárias (DBT)
+- **Gold layer:** Features ML ou agregações finais (DBT)
+- **DAG:** Workflow do Airflow
+- **Expectation:** Validação do Great Expectations
+- **Model:** Arquivo SQL do DBT (transformação)
+- **Feature:** Coluna usada para treinar ML
+- **Drift:** Mudança na distribuição de dados (ML monitoring)
+
+---
+
+**Mantenha este template acessível durante todo o projeto!**

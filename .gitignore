@@ -60,12 +60,13 @@ notebooks/.ipynb_checkpoints/
 # CREDENTIALS & SECRETS
 # ============================================
 .env
-*.key
-*.json
-!dbt/models/**/*.json
 *-key.json
 *service-account*.json
 credentials.json
+gcp-credentials.json
+*.key
+*.json
+!dbt/models/**/*.json
 
 # ============================================
 # GOOGLE CLOUD

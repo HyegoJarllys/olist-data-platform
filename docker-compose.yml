@@ -1,5 +1,6 @@
 x-airflow-common: &airflow-common
-    image: apache/airflow:2.8.1-python3.10
+    # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.1-python3.10}  # COMENTADO
+    build: .  # ADICIONADO - Usa Dockerfile local
     environment: &airflow-common-env
         AIRFLOW__CORE__EXECUTOR: LocalExecutor
         AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -10,6 +11,8 @@ x-airflow-common: &airflow-common
         AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
         _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
         GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/gcp-credentials.json
+        GCP_PROJECT_ID: olist-data-platform
+        GCS_BUCKET: olist-data-lake-hyego
     volumes:
         - ./airflow/dags:/opt/airflow/dags
         - ./airflow/logs:/opt/airflow/logs

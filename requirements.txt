@@ -44,11 +44,12 @@ optuna==3.5.0
 shap==0.44.1
 
 # ============================================
-# GOOGLE CLOUD
+# GOOGLE CLOUD (versões compatíveis)
 # ============================================
 google-cloud-storage==2.14.0
 google-cloud-bigquery==3.17.1
 google-cloud-aiplatform==1.40.0
+google-auth>=2.23.3  # CORRIGIDO: >=2.23.3 (exigido por google-cloud-storage)
 
 # ============================================
 # UTILITIES

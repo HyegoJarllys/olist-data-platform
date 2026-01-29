@@ -1,6 +1,7 @@
-x-airflow-common: &airflow-common
+x-airflow-common:
     # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.1-python3.10}  # COMENTADO
-    build: .  # ADICIONADO - Usa Dockerfile local
+    &airflow-common
+    build: . # ADICIONADO - Usa Dockerfile local
     environment: &airflow-common-env
         AIRFLOW__CORE__EXECUTOR: LocalExecutor
         AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -18,6 +19,7 @@ x-airflow-common: &airflow-common
         - ./airflow/logs:/opt/airflow/logs
         - ./airflow/config:/opt/airflow/config
         - ./airflow/plugins:/opt/airflow/plugins
+        - ./great_expectations:/opt/airflow/great_expectations
         - ./src:/opt/airflow/src
         - ./ml:/opt/airflow/ml
         - ./data:/opt/airflow/data

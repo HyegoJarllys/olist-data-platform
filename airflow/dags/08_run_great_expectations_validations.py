@@ -68,15 +68,21 @@ def run_orders_validation():
             batch_identifiers={"default_identifier_name": "orders_batch"},
         )
         
-        # Criar checkpoint
-        checkpoint_config = {
-            "name": "orders_checkpoint",
-            "config_version": 1.0,
-            "class_name": "SimpleCheckpoint",
-            "run_name_template": "%Y%m%d-%H%M%S-orders-validation",
-        }
+        # Criar checkpoint (verificar se já existe)
+        checkpoint_name = "orders_checkpoint"
         
-        context.add_checkpoint(**checkpoint_config)
+        try:
+            context.get_checkpoint(checkpoint_name)
+            logger.info(f"✅ Checkpoint {checkpoint_name} já existe, reutilizando...")
+        except:
+            checkpoint_config = {
+                "name": checkpoint_name,
+                "config_version": 1.0,
+                "class_name": "SimpleCheckpoint",
+                "run_name_template": "%Y%m%d-%H%M%S-orders-validation",
+            }
+            context.add_checkpoint(**checkpoint_config)
+            logger.info(f"✅ Checkpoint {checkpoint_name} criado!")
         
         # Executar validação
         results = context.run_checkpoint(
@@ -143,14 +149,20 @@ def run_customers_validation():
             batch_identifiers={"default_identifier_name": "customers_batch"},
         )
         
-        checkpoint_config = {
-            "name": "customers_checkpoint",
-            "config_version": 1.0,
-            "class_name": "SimpleCheckpoint",
-            "run_name_template": "%Y%m%d-%H%M%S-customers-validation",
-        }
+        checkpoint_name = "customers_checkpoint"
         
-        context.add_checkpoint(**checkpoint_config)
+        try:
+            context.get_checkpoint(checkpoint_name)
+            logger.info(f"✅ Checkpoint {checkpoint_name} já existe, reutilizando...")
+        except:
+            checkpoint_config = {
+                "name": checkpoint_name,
+                "config_version": 1.0,
+                "class_name": "SimpleCheckpoint",
+                "run_name_template": "%Y%m%d-%H%M%S-customers-validation",
+            }
+            context.add_checkpoint(**checkpoint_config)
+            logger.info(f"✅ Checkpoint {checkpoint_name} criado!")
         
         results = context.run_checkpoint(
             checkpoint_name="customers_checkpoint",
@@ -214,14 +226,20 @@ def run_order_items_validation():
             batch_identifiers={"default_identifier_name": "order_items_batch"},
         )
         
-        checkpoint_config = {
-            "name": "order_items_checkpoint",
-            "config_version": 1.0,
-            "class_name": "SimpleCheckpoint",
-            "run_name_template": "%Y%m%d-%H%M%S-order_items-validation",
-        }
+        checkpoint_name = "order_items_checkpoint"
         
-        context.add_checkpoint(**checkpoint_config)
+        try:
+            context.get_checkpoint(checkpoint_name)
+            logger.info(f"✅ Checkpoint {checkpoint_name} já existe, reutilizando...")
+        except:
+            checkpoint_config = {
+                "name": checkpoint_name,
+                "config_version": 1.0,
+                "class_name": "SimpleCheckpoint",
+                "run_name_template": "%Y%m%d-%H%M%S-order_items-validation",
+            }
+            context.add_checkpoint(**checkpoint_config)
+            logger.info(f"✅ Checkpoint {checkpoint_name} criado!")
         
         results = context.run_checkpoint(
             checkpoint_name="order_items_checkpoint",

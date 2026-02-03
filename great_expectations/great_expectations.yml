@@ -51,6 +51,20 @@ datasources:
       connection_string: postgresql://airflow:airflow@postgres:5432/airflow
     data_connectors:
       default_runtime_data_connector:
+        name: default_runtime_data_connector
+        class_name: RuntimeDataConnector
+        module_name: great_expectations.datasource.data_connector
+        batch_identifiers:
+          - default_identifier_name
+  postgres_silver_datasource:
+    class_name: Datasource
+    module_name: great_expectations.datasource
+    execution_engine:
+      class_name: SqlAlchemyExecutionEngine
+      module_name: great_expectations.execution_engine
+      connection_string: postgresql://airflow:airflow@postgres:5432/airflow
+    data_connectors:
+      default_runtime_data_connector:
         class_name: RuntimeDataConnector
         module_name: great_expectations.datasource.data_connector
         batch_identifiers:

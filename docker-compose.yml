@@ -47,6 +47,36 @@ services:
         ports:
             - "5432:5432"
 
+    streamlit:
+        build:
+            context: .
+            dockerfile: Dockerfile.streamlit
+        container_name: olist-streamlit-dashboard
+        ports:
+            - "8501:8501"
+        volumes:
+            - ./src/observability:/app
+            - ./great_expectations:/app/great_expectations:ro
+        environment:
+            - POSTGRES_HOST=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - AIRFLOW_API_URL=http://airflow-webserver:8080/api/v1
+            - AIRFLOW_USERNAME=airflow
+            - AIRFLOW_PASSWORD=airflow
+        depends_on:
+            - postgres
+            - airflow-webserver
+        restart: unless-stopped
+        healthcheck:
+            test: [ "CMD", "curl", "-f", "http://localhost:8501/_stcore/health" ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+
     airflow-webserver:
         <<: *airflow-common
         command: webserver
